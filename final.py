@@ -11,18 +11,29 @@ class EmailSender:
         self.password = password
         self.to_email = to_email
 
-    def send_email(self, subject, body):
-        msg = MIMEMultipart()
-        msg['From'] = self.from_email
-        msg['To'] = self.to_email
-        msg['Subject'] = subject
-        msg.attach(MIMEText(body, 'plain'))
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.starttls()
-        server.login(self.from_email, self.password)
-        text = msg.as_string()
-        server.sendmail(self.from_email, self.to_email, text)
-        server.quit()
+    def send_email(self, subject, body, html=None):
+        try:
+            msg = MIMEMultipart()
+            msg['From'] = self.from_email
+            msg['To'] = self.to_email
+            msg['Subject'] = subject
+            
+            # Create the body of the message (a plain-text and an HTML version).
+            text = MIMEText(body, 'plain')
+            if html:
+                html = MIMEText(html, 'html')
+                msg.attach(html)
+                
+            msg.attach(text)
+            
+            server = smtplib.SMTP('smtp.gmail.com', 587)
+            server.starttls()
+            server.login(self.from_email, self.password)
+            text = msg.as_string()
+            server.sendmail(self.from_email, self.to_email, text)
+            server.quit()
+        except Exception as e:
+            print(f"Failed to send email: {e}")
 
     def send_success_email(self):
         subject = "Purchase Successful"
